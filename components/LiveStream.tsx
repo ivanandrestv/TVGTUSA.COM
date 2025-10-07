@@ -10,7 +10,7 @@ interface LiveStreamProps {
 }
 
 export function LiveStream({ streamUrl, className }: LiveStreamProps) {
-  const playerRef = useRef<HTMLDivElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [volume, setVolume] = useState(1)
@@ -19,66 +19,77 @@ export function LiveStream({ streamUrl, className }: LiveStreamProps) {
   const [error, setError] = useState<string | null>(null)
 
   // URL por defecto si no se proporciona una
-  const defaultStreamUrl = process.env.NEXT_PUBLIC_STREAM_URL || 'https://example.com/stream.m3u8'
+  const defaultStreamUrl = process.env.NEXT_PUBLIC_STREAM_URL || ''
 
   useEffect(() => {
-    if (!playerRef.current) return
+    if (!videoRef.current) return
 
-    // Simulación de inicialización del player
-    // En producción, aquí inicializarías Clappr Player
-    const initializePlayer = async () => {
-      try {
-        setIsLoading(true)
-        setError(null)
-        
-        // Simular carga del stream
-        await new Promise(resolve => setTimeout(resolve, 2000))
-        
-        // Aquí iría la inicialización real de Clappr
-        // const player = new Clappr.Player({
-        //   source: streamUrl || defaultStreamUrl,
-        //   parentId: playerRef.current,
-        //   width: '100%',
-        //   height: '100%',
-        //   autoPlay: true,
-        //   mute: isMuted,
-        //   volume: volume * 100,
-        // })
-        
-        setIsLoading(false)
-        setIsPlaying(true)
-      } catch (err) {
-        setError('Error al cargar el stream en vivo')
-        setIsLoading(false)
-      }
+    const video = videoRef.current
+    
+    const handleLoadStart = () => setIsLoading(true)
+    const handleCanPlay = () => {
+      setIsLoading(false)
+      setError(null)
     }
+    const handleError = () => {
+      setError('Error al cargar el stream en vivo')
+      setIsLoading(false)
+    }
+    const handlePlay = () => setIsPlaying(true)
+    const handlePause = () => setIsPlaying(false)
 
-    initializePlayer()
-  }, [streamUrl, defaultStreamUrl])
+    video.addEventListener('loadstart', handleLoadStart)
+    video.addEventListener('canplay', handleCanPlay)
+    video.addEventListener('error', handleError)
+    video.addEventListener('play', handlePlay)
+    video.addEventListener('pause', handlePause)
+
+    return () => {
+      video.removeEventListener('loadstart', handleLoadStart)
+      video.removeEventListener('canplay', handleCanPlay)
+      video.removeEventListener('error', handleError)
+      video.removeEventListener('play', handlePlay)
+      video.removeEventListener('pause', handlePause)
+    }
+  }, [])
 
   const togglePlay = () => {
-    setIsPlaying(!isPlaying)
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause()
+      } else {
+        videoRef.current.play()
+      }
+    }
   }
 
   const toggleMute = () => {
-    setIsMuted(!isMuted)
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted
+      setIsMuted(!isMuted)
+    }
   }
 
   const toggleFullscreen = () => {
-    if (!isFullscreen) {
-      if (playerRef.current?.requestFullscreen) {
-        playerRef.current.requestFullscreen()
+    if (videoRef.current) {
+      if (!isFullscreen) {
+        if (videoRef.current.requestFullscreen) {
+          videoRef.current.requestFullscreen()
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen()
+        }
       }
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen()
-      }
+      setIsFullscreen(!isFullscreen)
     }
-    setIsFullscreen(!isFullscreen)
   }
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseFloat(e.target.value)
+    if (videoRef.current) {
+      videoRef.current.volume = newVolume
+    }
     setVolume(newVolume)
     setIsMuted(newVolume === 0)
   }
@@ -104,7 +115,7 @@ export function LiveStream({ streamUrl, className }: LiveStreamProps) {
   return (
     <div className={`bg-black rounded-lg overflow-hidden shadow-2xl ${className}`}>
       {/* Player Container */}
-      <div className="relative aspect-video bg-gray-900" ref={playerRef}>
+      <div className="relative aspect-video bg-gray-900">
         {isLoading ? (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
@@ -114,16 +125,33 @@ export function LiveStream({ streamUrl, className }: LiveStreamProps) {
           </div>
         ) : (
           <>
-            {/* Placeholder para el video */}
-            <div className="w-full h-full bg-gradient-to-br from-red-600 to-blue-600 flex items-center justify-center">
-              <div className="text-center text-white">
-                <div className="bg-red-600 rounded-full p-4 mb-4 inline-block animate-pulse">
-                  <Play className="h-8 w-8" />
+            {/* Video Player */}
+            {streamUrl || defaultStreamUrl ? (
+              <video
+                ref={videoRef}
+                className="w-full h-full object-cover"
+                controls={false}
+                autoPlay
+                muted={isMuted}
+                volume={volume}
+                playsInline
+              >
+                <source src={streamUrl || defaultStreamUrl} type="application/x-mpegURL" />
+                <source src={streamUrl || defaultStreamUrl} type="video/mp4" />
+                Tu navegador no soporta video HTML5.
+              </video>
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-red-600 to-blue-600 flex items-center justify-center">
+                <div className="text-center text-white">
+                  <div className="bg-red-600 rounded-full p-4 mb-4 inline-block animate-pulse">
+                    <Play className="h-8 w-8" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-2">EN VIVO</h3>
+                  <p className="text-lg opacity-90">TVGT USA</p>
+                  <p className="text-sm opacity-75 mt-2">URL de stream no configurada</p>
                 </div>
-                <h3 className="text-2xl font-bold mb-2">EN VIVO</h3>
-                <p className="text-lg opacity-90">TVGT USA</p>
               </div>
-            </div>
+            )}
 
             {/* Overlay de controles */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300">
