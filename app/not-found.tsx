@@ -39,14 +39,15 @@ export default function NotFound() {
             </Button>
           </Link>
           
-          <Button 
-            variant="ghost" 
-            onClick={() => window.history.back()}
-            className="w-full text-gray-400 hover:text-white py-3"
-          >
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            Volver Atrás
-          </Button>
+          <Link href="/">
+            <Button 
+              variant="ghost" 
+              className="w-full text-gray-400 hover:text-white py-3"
+            >
+              <ArrowLeft className="h-5 w-5 mr-2" />
+              Volver Atrás
+            </Button>
+          </Link>
         </div>
 
         {/* Help Text */}

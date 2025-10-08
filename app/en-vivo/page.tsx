@@ -102,12 +102,13 @@ export default function EnVivoPage() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              onClick={() => window.location.reload()} 
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+            <a 
+              href="#" 
+              className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
+              onClick={(e) => { e.preventDefault(); window.location.reload(); }}
             >
               Refrescar Página
-            </Button>
+            </a>
             <Link href="/contacto">
               <Button variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900">
                 Reportar Problema
