@@ -133,7 +133,6 @@ export function LiveStream({ streamUrl, className }: LiveStreamProps) {
                 controls={false}
                 autoPlay
                 muted={isMuted}
-                volume={volume}
                 playsInline
               >
                 <source src={streamUrl || defaultStreamUrl} type="application/x-mpegURL" />
