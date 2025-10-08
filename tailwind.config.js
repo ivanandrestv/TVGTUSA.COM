@@ -53,8 +53,8 @@ module.exports = {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        serif: ['Merriweather', 'serif'],
+        sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        serif: ['Georgia', 'Cambria', 'serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
